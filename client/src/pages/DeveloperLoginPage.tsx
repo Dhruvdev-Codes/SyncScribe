@@ -3,6 +3,7 @@ import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { Terminal, Lock, Mail, ArrowRight, ShieldCheck, GitBranch, Database, Activity } from 'lucide-react';
+import { VantaHaloBackground } from '../components/VantaHaloBackground';
 
 export const DeveloperLoginPage: React.FC = () => {
   const { user, login, isAuthenticated } = useAuth();
@@ -51,26 +52,25 @@ export const DeveloperLoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 relative overflow-hidden">
-      {/* Developer-styled background */}
-      <div className="absolute inset-0 opacity-[0.07]" style={{
-        backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 39px, #22d3ee 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, #22d3ee 40px)',
-      }}></div>
-      <div className="absolute -top-40 -left-40 w-[28rem] h-[28rem] bg-cyan-500/15 rounded-full blur-3xl"></div>
-      <div className="absolute -bottom-40 -right-40 w-[28rem] h-[28rem] bg-purple-600/15 rounded-full blur-3xl"></div>
-
-      <div className="relative z-10 w-full max-w-md p-8">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-slate-900 border border-cyan-500/30 rounded-2xl">
-            <Terminal className="text-cyan-400" size={20} />
-            <span className="text-cyan-400 font-mono text-sm font-semibold tracking-wide">DEV PORTAL</span>
+    <VantaHaloBackground
+      backgroundColor={0x020617}
+      baseColor={0x0891b2}
+      size={1.15}
+      className="min-h-screen flex items-center justify-center p-4 bg-slate-950"
+    >
+      <div className="relative z-10 w-full max-w-md py-6">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-2 mb-3 px-4 py-2 bg-slate-900/90 border border-cyan-500/40 rounded-2xl shadow-lg shadow-cyan-500/10">
+            <Terminal className="text-cyan-400" size={18} />
+            <span className="text-cyan-400 font-mono text-xs font-semibold tracking-wider">DEV CONSOLE</span>
           </div>
-          <h1 className="text-3xl font-bold text-white font-mono">Secure Developer Access</h1>
-          <p className="text-slate-400 mt-2 font-mono text-sm">Authenticate to unlock telemetry &amp; admin tools</p>
+          <h1 className="text-3xl font-extrabold text-white font-mono tracking-tight">Secure Dev Access</h1>
+          <p className="text-slate-300 mt-1.5 font-mono text-xs">Unlock telemetry &amp; live platform telemetry</p>
         </div>
-<div className="bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 p-8 space-y-6">
+
+        <div className="bg-slate-950/85 backdrop-blur-xl rounded-3xl shadow-2xl border border-cyan-500/30 p-8 space-y-6">
           {error && (
-            <div className="px-4 py-3 bg-red-950/60 text-red-400 text-sm rounded-2xl border border-red-800 font-mono">
+            <div className="px-4 py-3 bg-red-950/70 text-red-300 text-sm rounded-2xl border border-red-800 font-mono">
               $ {error}
             </div>
           )}
@@ -85,7 +85,7 @@ export const DeveloperLoginPage: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="dev@syncscribe.dev"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition font-mono"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-900/80 border border-slate-700/80 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition font-mono"
                 />
               </div>
             </div>
@@ -99,20 +99,20 @@ export const DeveloperLoginPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition font-mono"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-900/80 border border-slate-700/80 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition font-mono"
                 />
               </div>
             </div>
 
-            <div className="flex items-center gap-2 px-4 py-3 bg-slate-950/60 border border-slate-800 rounded-2xl">
+            <div className="flex items-center gap-2 px-4 py-3 bg-slate-900/60 border border-slate-800 rounded-2xl">
               <ShieldCheck className="text-emerald-400 shrink-0" size={16} />
-              <p className="text-xs text-slate-500 font-mono">Role-locked: developer or admin credentials required</p>
+              <p className="text-xs text-slate-400 font-mono">Role-locked: developer or admin credentials required</p>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 rounded-2xl bg-cyan-500 text-slate-950 font-mono font-semibold hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20"
+              className="w-full py-3 px-4 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-mono font-bold disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/25"
             >
               {loading ? (
                 <span className="w-5 h-5 border-2 border-slate-950/30 border-t-slate-950 rounded-full animate-spin"></span>
@@ -127,35 +127,35 @@ export const DeveloperLoginPage: React.FC = () => {
             <button
               type="button"
               onClick={handleDemoDevLogin}
-              className="w-full py-2.5 px-4 rounded-2xl border border-slate-800 hover:border-cyan-500/50 hover:bg-slate-900 text-cyan-400 font-mono text-xs transition"
+              className="w-full py-2.5 px-4 rounded-2xl border border-cyan-500/30 hover:border-cyan-400 hover:bg-cyan-950/30 text-cyan-300 font-mono text-xs transition"
             >
               $ bypass --role=developer (Demo Portal)
             </button>
           </form>
 
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="flex flex-col items-center gap-1 p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+            <div className="flex flex-col items-center gap-1 p-3 bg-slate-900/70 rounded-xl border border-slate-800">
               <Database className="text-cyan-400" size={16} />
-              <span className="text-[10px] text-slate-500 font-mono">DB Logs</span>
+              <span className="text-[10px] text-slate-400 font-mono">DB Logs</span>
             </div>
-            <div className="flex flex-col items-center gap-1 p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+            <div className="flex flex-col items-center gap-1 p-3 bg-slate-900/70 rounded-xl border border-slate-800">
               <Activity className="text-purple-400" size={16} />
-              <span className="text-[10px] text-slate-500 font-mono">Telemetry</span>
+              <span className="text-[10px] text-slate-400 font-mono">Telemetry</span>
             </div>
-            <div className="flex flex-col items-center gap-1 p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+            <div className="flex flex-col items-center gap-1 p-3 bg-slate-900/70 rounded-xl border border-slate-800">
               <GitBranch className="text-emerald-400" size={16} />
-              <span className="text-[10px] text-slate-500 font-mono">Git Ops</span>
+              <span className="text-[10px] text-slate-400 font-mono">Git Ops</span>
             </div>
           </div>
         </div>
 
         <div className="mt-6 text-center">
-          <Link to="/login" className="text-sm text-slate-500 hover:text-slate-300 transition">
+          <Link to="/login" className="text-sm text-slate-400 hover:text-slate-200 transition font-mono text-xs">
             ← Back to User Login
           </Link>
         </div>
       </div>
-    </div>
+    </VantaHaloBackground>
   );
 };
 
