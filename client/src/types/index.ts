@@ -1,3 +1,10 @@
+declare global {
+  interface Window {
+    THREE?: any;
+    VANTA?: any;
+  }
+}
+
 export interface User {
   id: string;
   name: string;

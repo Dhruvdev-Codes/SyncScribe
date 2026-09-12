@@ -60,7 +60,7 @@ export const DocumentProvider: React.FC<{ children: React.ReactNode; documentId?
 }) => {
   const { user } = useAuth();
   const [document, setDocument] = useState<DocumentItem | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(Boolean(documentId));
   const [activeUsers, setActiveUsers] = useState<UserPresence[]>([]);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [comments, setComments] = useState<CommentItem[]>([]);
@@ -99,7 +99,11 @@ export const DocumentProvider: React.FC<{ children: React.ReactNode; documentId?
 
   useEffect(() => {
     if (documentId) {
+      setIsLoading(true);
       loadDocument(documentId);
+    } else {
+      setDocument(null);
+      setIsLoading(false);
     }
   }, [documentId, loadDocument]);
 

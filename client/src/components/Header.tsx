@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDocument } from '../context/DocumentContext';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -44,6 +44,12 @@ export const Header: React.FC<HeaderProps> = ({ onBackToDashboard }) => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState(document?.title || 'Untitled Document');
   const [showExportMenu, setShowExportMenu] = useState(false);
+
+  useEffect(() => {
+    if (document?.title) {
+      setTitleInput(document.title);
+    }
+  }, [document?.title]);
 
   const unresolvedComments = comments.filter((c) => !c.resolved).length;
 

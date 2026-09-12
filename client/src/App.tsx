@@ -122,7 +122,7 @@ const MainWorkspace: React.FC = () => {
   }
 
   return (
-    <DocumentProvider documentId={currentDocId}>
+    <DocumentProvider key={currentDocId} documentId={currentDocId}>
       <DocumentWorkspaceInner
         onBack={handleBackToDashboard}
         onOpenTemplates={() => setShowTemplatesModal(true)}

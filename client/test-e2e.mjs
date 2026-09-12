@@ -96,10 +96,25 @@ async function run() {
     throw new Error('Comment or reply count mismatch');
   }
 
-  console.log('\n[TEST 8] Fetching default templates...');
+  console.log('\n[TEST 8] Fetching default templates and creating documents from templates...');
   const templates = await templateApi.getAll();
   console.log(`         Found ${templates.length} templates`);
   if (templates.length === 0) throw new Error('Templates list is empty');
+
+  for (const tpl of templates) {
+    const docFromTpl = await documentApi.create({
+      title: tpl.title,
+      content: tpl.content,
+      plainText: tpl.content.replace(/<[^>]*>?/gm, ' '),
+      icon: tpl.icon || '📝',
+      tags: [tpl.category || 'template'],
+    });
+    console.log(`         Created doc from template '${tpl.title}' -> ID: ${docFromTpl.id}`);
+    const verified = await documentApi.getById(docFromTpl.id);
+    if (!verified || verified.title !== tpl.title) {
+      throw new Error(`Failed to verify document created from template ${tpl.id}`);
+    }
+  }
 
   console.log('\n[TEST 9] Testing AI Generation & Chat offline engine...');
   const genResult = await aiApi.generate({ prompt: 'Engineering meeting agenda' });
