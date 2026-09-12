@@ -122,6 +122,13 @@ async function run() {
   const genResult = await aiApi.generate({ prompt: 'Engineering meeting agenda' });
   console.log('         AI Generation sample:\n' + genResult.text.slice(0, 120) + '...\n');
 
+  console.log('[TEST 9b] Testing Conversational AI Copilot Chat for casual input ("hii")...');
+  const chatResult = await aiApi.chat({ message: 'hii' });
+  console.log('         AI Chat response for "hii":\n         "' + chatResult.response + '"');
+  if (chatResult.response.toLowerCase().includes('# hii') || chatResult.response.toLowerCase().includes('executive summary')) {
+    throw new Error('Copilot returned overly formal executive template for casual greeting "hii"');
+  }
+
   console.log('\n[TEST 10] Testing Search and Filter...');
   const searchResults = await documentApi.getAll('Automated');
   console.log(`         Found ${searchResults.length} docs matching 'Automated'`);

@@ -23,7 +23,7 @@ import {
   CommentReply,
   DocumentTemplate,
 } from '../types/index';
-import { executeAICompletion, executeAIRewrite, executeAITranslation } from './aiService';
+import { executeAICompletion, executeAIRewrite, executeAITranslation, SYSTEM_PROMPT } from './aiService';
 
 // --------------------------------------------------------------- storage
 const K_DOCS = 'syncscribe_local_documents';
@@ -643,7 +643,7 @@ export const localAiApi = {
     const response = await executeAICompletion(
       last,
       ctx,
-      `You are SyncScribe AI Copilot, an elite collaborative document writing and editing assistant. Answer questions clearly, accurately, and assist with document drafting. Document context:\n${ctx || ''}`
+      `${SYSTEM_PROMPT}${ctx ? `\n\nActive Document Context:\n${ctx}` : ''}`
     );
     return { response, answer: response, text: response };
   },

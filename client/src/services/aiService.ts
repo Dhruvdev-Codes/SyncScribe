@@ -25,10 +25,19 @@ export const saveAISettings = (settings: AISettings) => {
   } catch {}
 };
 
+export const SYSTEM_PROMPT = `You are SyncScribe AI Copilot, an intelligent, helpful, and friendly AI assistant integrated into a real-time collaborative document editor.
+
+CRITICAL BEHAVIORAL RULES:
+1. MATCH USER INTENT: 
+   - If the user says a casual greeting (e.g., "hi", "hello", "hii", "hey", "how are you"), respond briefly, warmly, and conversationally like ChatGPT or Gemini. DO NOT generate formal multi-section documents, bullet points, or corporate frameworks for casual chat.
+   - If the user asks a specific question or requests document generation (e.g., "write meeting notes", "summarize this RFC", "generate a draft"), provide clean, well-structured content using appropriate Markdown.
+2. TONE: Be direct, helpful, concise, and collaborative. Avoid unnecessary filler or rigid structural templates unless explicitly asked for a formal report.
+3. CONTEXT: Use the provided document context only when relevant to the user's current editing task.`;
+
 function isValidLLMResponse(text: string | null | undefined): boolean {
   if (!text || typeof text !== 'string') return false;
   const t = text.trim();
-  if (t.length < 5) return false;
+  if (t.length < 2) return false;
   const lower = t.toLowerCase();
   if (
     lower.includes('reached its budget') ||
@@ -41,6 +50,38 @@ function isValidLLMResponse(text: string | null | undefined): boolean {
     return false;
   }
   return true;
+}
+
+function isCasualGreeting(prompt: string): boolean {
+  const p = prompt.toLowerCase().trim().replace(/[!?.,;:]+$/, '');
+  const greetings = [
+    'hi', 'hii', 'hiii', 'hello', 'hey', 'heyy', 'sup', 'yo', 'howdy',
+    'good morning', 'good evening', 'good afternoon', 'greetings',
+    'how are you', 'how are you doing', 'hows it going', "how's it going",
+    'what can you do', 'who are you', 'what are you', 'help', 'help me',
+    'thanks', 'thank you', 'thx', 'ok', 'okay', 'bye', 'goodbye'
+  ];
+  return greetings.includes(p) || /^(hi+|hello+|hey+|yo|sup)\b/i.test(p);
+}
+
+function handleCasualGreeting(prompt: string): string {
+  const p = prompt.toLowerCase().trim().replace(/[!?.,;:]+$/, '');
+  if (p.includes('how are you') || p.includes('hows it going') || p.includes("how's it going")) {
+    return "I'm doing great and ready to help you write and collaborate! What would you like to work on today?";
+  }
+  if (p.includes('who are you') || p.includes('what are you')) {
+    return "I'm SyncScribe AI Copilot, your intelligent document assistant! I can draft articles, brainstorm ideas, summarize text, rewrite paragraphs, and fix grammar.";
+  }
+  if (p.includes('what can you do') || p.includes('help')) {
+    return "Here's what I can help you with:\n\n- 📝 **Draft & Write**: Generate meeting notes, PRDs, blogs, or code\n- ⚡ **Edit & Polish**: Rewrite text, change tone, or fix grammar\n- 📊 **Summarize**: Create executive summaries and bullet points\n- 🌍 **Translate**: Translate between multiple languages\n\nWhat would you like to work on?";
+  }
+  if (p.includes('thank') || p.includes('thx')) {
+    return "You're very welcome! Let me know if you need anything else for your document. 😊";
+  }
+  if (p.includes('bye') || p.includes('goodbye')) {
+    return "Goodbye! Have a productive writing session! 👋";
+  }
+  return "Hello! 👋 I'm SyncScribe AI Copilot. How can I help you with your document today?";
 }
 
 // ----------------------------------------------------------------------------
@@ -145,11 +186,7 @@ export async function executeAICompletion(
   systemPrompt?: string
 ): Promise<string> {
   const settings = getAISettings();
-  const sys =
-    systemPrompt ||
-    `You are SyncScribe AI, an expert collaborative document writing and synthesis assistant.
-Write comprehensive, beautiful, structured markdown content with clear headers (#, ##), bullet points, bold keywords, and actionable items.
-${context ? `Document context:\n${context}` : ''}`;
+  const sys = systemPrompt || `${SYSTEM_PROMPT}${context ? `\n\nActive Document Context:\n${context}` : ''}`;
 
   // 1. Try User-Configured Gemini
   if (settings.provider === 'gemini' && settings.geminiKey) {
@@ -194,6 +231,10 @@ function cleanTopic(prompt: string): string {
 }
 
 export function generateSmartLocalResponse(prompt: string, context: string = ''): string {
+  if (isCasualGreeting(prompt)) {
+    return handleCasualGreeting(prompt);
+  }
+
   const lower = prompt.toLowerCase().trim();
   const topic = cleanTopic(prompt);
   const titleCaseTopic = topic.charAt(0).toUpperCase() + topic.slice(1);

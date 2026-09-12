@@ -7,10 +7,19 @@ const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
+export const SYSTEM_PROMPT = `You are SyncScribe AI Copilot, an intelligent, helpful, and friendly AI assistant integrated into a real-time collaborative document editor.
+
+CRITICAL BEHAVIORAL RULES:
+1. MATCH USER INTENT: 
+   - If the user says a casual greeting (e.g., "hi", "hello", "hii", "hey", "how are you"), respond briefly, warmly, and conversationally like ChatGPT or Gemini. DO NOT generate formal multi-section documents, bullet points, or corporate frameworks for casual chat.
+   - If the user asks a specific question or requests document generation (e.g., "write meeting notes", "summarize this RFC", "generate a draft"), provide clean, well-structured content using appropriate Markdown.
+2. TONE: Be direct, helpful, concise, and collaborative. Avoid unnecessary filler or rigid structural templates unless explicitly asked for a formal report.
+3. CONTEXT: Use the provided document context only when relevant to the user's current editing task.`;
+
 function isValidLLMResponse(text: string | null | undefined): boolean {
   if (!text || typeof text !== 'string') return false;
   const t = text.trim();
-  if (t.length < 5) return false;
+  if (t.length < 2) return false;
   const lower = t.toLowerCase();
   if (
     lower.includes('reached its budget') ||
@@ -25,16 +34,44 @@ function isValidLLMResponse(text: string | null | undefined): boolean {
   return true;
 }
 
+function isCasualGreeting(prompt: string): boolean {
+  const p = prompt.toLowerCase().trim().replace(/[!?.,;:]+$/, '');
+  const greetings = [
+    'hi', 'hii', 'hiii', 'hello', 'hey', 'heyy', 'sup', 'yo', 'howdy',
+    'good morning', 'good evening', 'good afternoon', 'greetings',
+    'how are you', 'how are you doing', 'hows it going', "how's it going",
+    'what can you do', 'who are you', 'what are you', 'help', 'help me',
+    'thanks', 'thank you', 'thx', 'ok', 'okay', 'bye', 'goodbye'
+  ];
+  return greetings.includes(p) || /^(hi+|hello+|hey+|yo|sup)\b/i.test(p);
+}
+
+function handleCasualGreeting(prompt: string): string {
+  const p = prompt.toLowerCase().trim().replace(/[!?.,;:]+$/, '');
+  if (p.includes('how are you') || p.includes('hows it going') || p.includes("how's it going")) {
+    return "I'm doing great and ready to help you write and collaborate! What would you like to work on today?";
+  }
+  if (p.includes('who are you') || p.includes('what are you')) {
+    return "I'm SyncScribe AI Copilot, your intelligent document assistant! I can draft articles, brainstorm ideas, summarize text, rewrite paragraphs, and fix grammar.";
+  }
+  if (p.includes('what can you do') || p.includes('help')) {
+    return "Here's what I can help you with:\n\n- 📝 **Draft & Write**: Generate meeting notes, PRDs, blogs, or code\n- ⚡ **Edit & Polish**: Rewrite text, change tone, or fix grammar\n- 📊 **Summarize**: Create executive summaries and bullet points\n- 🌍 **Translate**: Translate between multiple languages\n\nWhat would you like to work on?";
+  }
+  if (p.includes('thank') || p.includes('thx')) {
+    return "You're very welcome! Let me know if you need anything else for your document. 😊";
+  }
+  if (p.includes('bye') || p.includes('goodbye')) {
+    return "Goodbye! Have a productive writing session! 👋";
+  }
+  return "Hello! 👋 I'm SyncScribe AI Copilot. How can I help you with your document today?";
+}
+
 // ----------------------------------------------------------------------------
 // Cloud LLM Callers (Gemini, OpenAI, Pollinations AI)
 // ----------------------------------------------------------------------------
 
 async function callCloudAI(prompt: string, context?: string, systemPrompt?: string): Promise<string> {
-  const sys =
-    systemPrompt ||
-    `You are SyncScribe AI, an elite document assistant and collaborative editor.
-Write comprehensive, beautiful, structured markdown content with clear headers (#, ##), bullet points, bold keywords, and actionable items.
-${context ? `Document Context:\n${context}` : ''}`;
+  const sys = systemPrompt || `${SYSTEM_PROMPT}${context ? `\n\nActive Document Context:\n${context}` : ''}`;
 
   if (GEMINI_API_KEY) {
     try {
@@ -42,7 +79,7 @@ ${context ? `Document Context:\n${context}` : ''}`;
       const res = await axios.post(
         url,
         {
-          contents: [{ parts: [{ text: `${sys}\n\nTask:\n${prompt}` }] }],
+          contents: [{ parts: [{ text: `${sys}\n\nUser Prompt:\n${prompt}` }] }],
           generationConfig: { temperature: 0.7, maxOutputTokens: 1500 },
         },
         { timeout: 8000 }
@@ -99,6 +136,10 @@ function cleanTopic(prompt: string): string {
 }
 
 function generateSmartBackendFallback(prompt: string, context: string = ''): string {
+  if (isCasualGreeting(prompt)) {
+    return handleCasualGreeting(prompt);
+  }
+
   const lower = prompt.toLowerCase().trim();
   const topic = cleanTopic(prompt);
   const titleCaseTopic = topic.charAt(0).toUpperCase() + topic.slice(1);
@@ -195,7 +236,7 @@ export const chatWithDocument = async (req: Request, res: Response) => {
       const aiResponse = await callCloudAI(
         lastMsg,
         documentContext,
-        `You are SyncScribe AI Copilot, a brilliant document assistant. Answer questions clearly, accurately, and assist with document drafting. Document context:\n${documentContext || ''}`
+        `${SYSTEM_PROMPT}${documentContext ? `\n\nActive Document Context:\n${documentContext}` : ''}`
       );
       return res.json({ response: aiResponse, answer: aiResponse, text: aiResponse, source: 'ai-engine' });
     }
