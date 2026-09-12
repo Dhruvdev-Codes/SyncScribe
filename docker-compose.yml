@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: syncscribe-server
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - CLIENT_URL=http://localhost:3000
+      - AI_SERVICE_URL=http://ai-service:8000
+      - DATABASE_URL=file:./dev.db
+    volumes:
+      - server-data:/app/prisma
+    networks:
+      - syncscribe-network
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: syncscribe-ai
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    networks:
+      - syncscribe-network
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: syncscribe-client
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+    networks:
+      - syncscribe-network
+
+networks:
+  syncscribe-network:
+    driver: bridge
+
+volumes:
+  server-data:

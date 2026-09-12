@@ -1,0 +1,159 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-200;
+  }
+}
+
+/* TipTap & ProseMirror Styles */
+.ProseMirror {
+  outline: none;
+  min-height: 500px;
+  line-height: 1.75;
+  font-size: 1.05rem;
+}
+
+.ProseMirror p {
+  margin-bottom: 0.85em;
+}
+
+.ProseMirror h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  color: inherit;
+}
+
+.ProseMirror h2 {
+  font-size: 1.65rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-top: 1.25em;
+  margin-bottom: 0.4em;
+  color: inherit;
+}
+
+.ProseMirror h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 1em;
+  margin-bottom: 0.3em;
+  color: inherit;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 0.85em;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 0.85em;
+}
+
+.ProseMirror li {
+  margin-bottom: 0.3em;
+}
+
+.ProseMirror blockquote {
+  border-left: 4px solid #0ea5e9;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: #64748b;
+}
+
+.dark .ProseMirror blockquote {
+  color: #94a3b8;
+}
+
+.ProseMirror pre {
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: 'Fira Code', monospace;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.ProseMirror code {
+  font-family: 'Fira Code', monospace;
+  background: rgba(14, 165, 233, 0.1);
+  color: #0284c7;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+}
+
+.dark .ProseMirror code {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+}
+
+.ProseMirror hr {
+  border: none;
+  border-top: 2px solid #e2e8f0;
+  margin: 2rem 0;
+}
+
+.dark .ProseMirror hr {
+  border-color: #334155;
+}
+
+/* Task lists */
+ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+}
+
+ul[data-type="taskList"] li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3em;
+}
+
+ul[data-type="taskList"] li > label {
+  user-select: none;
+}
+
+/* Placeholder */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #94a3b8;
+  pointer-events: none;
+  height: 0;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

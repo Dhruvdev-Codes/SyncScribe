@@ -1,0 +1,22 @@
+{
+  "name": "syncscribe-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SyncScribe - Real-Time Collaborative Document Editor with AI Integration",
+  "scripts": {
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,magenta\" \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "dev:all": "concurrently -n \"SERVER,CLIENT,AI\" -c \"cyan,magenta,yellow\" \"npm run dev --prefix server\" \"npm run dev --prefix client\" \"npm run dev --prefix ai-service\"",
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client",
+    "build": "npm run build --prefix server && npm run build --prefix client",
+    "test": "npm run test --prefix server && npm run test --prefix client",
+    "start": "npm run start --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "SyncScribe Team",
+  "license": "MIT"
+}

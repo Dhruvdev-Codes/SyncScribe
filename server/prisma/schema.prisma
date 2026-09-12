@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  avatar    String?
+  color     String   @default("#3b82f6")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Document {
+  id          String            @id @default(uuid())
+  title       String            @default("Untitled Document")
+  content     String            @default("<p>Start typing here...</p>")
+  plainText   String            @default("")
+  summary     String?
+  coverImage  String?
+  icon        String?           @default("📝")
+  isPublic    Boolean           @default(false)
+  ownerId     String?
+  tags        String            @default("[]") // JSON string of string[]
+  version     Int               @default(1)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  versions    DocumentVersion[]
+  comments    Comment[]
+}
+
+model DocumentVersion {
+  id            String   @id @default(uuid())
+  documentId    String
+  document      Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  title         String
+  content       String
+  plainText     String   @default("")
+  description   String?
+  authorName    String   @default("Collaborator")
+  createdAt     DateTime @default(now())
+}
+
+model Comment {
+  id           String         @id @default(uuid())
+  documentId   String
+  document     Document       @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  authorName   String
+  authorAvatar String?
+  authorColor  String         @default("#3b82f6")
+  text         String
+  selectedText String?
+  rangeStart   Int?
+  rangeEnd     Int?
+  resolved     Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  replies      CommentReply[]
+}
+
+model CommentReply {
+  id           String   @id @default(uuid())
+  commentId    String
+  comment      Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  authorName   String
+  authorAvatar String?
+  authorColor  String   @default("#3b82f6")
+  text         String
+  createdAt    DateTime @default(now())
+}
+
+model DocumentTemplate {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  category    String   @default("General")
+  icon        String   @default("📄")
+  content     String
+  createdAt   DateTime @default(now())
+}
+
+model ActivityLog {
+  id         String   @id @default(uuid())
+  action     String   // e.g. DOC_CREATED, DOC_UPDATED, SNAPSHOT_SAVED, VERSION_RESTORED, COMMENT_ADDED, AI_PROMPT, USER_JOINED
+  entityType String   // document, version, comment, ai, user, dev
+  entityId   String?
+  details    String?  // JSON string or human-readable description
+  userId     String?
+  userName   String?  @default("Developer")
+  ipAddress  String?
+  metadata   String?  // JSON formatted extra payload
+  createdAt  DateTime @default(now())
+}
+
+model ProjectMetric {
+  id          String   @id @default(uuid())
+  metricKey   String   @unique
+  metricValue String
+  category    String   @default("system")
+  updatedAt   DateTime @updatedAt
+}
+
+model DevActivity {
+  id            String   @id @default(uuid())
+  developerName String   @default("Dhruv")
+  actionType    String   // FEATURE_BUILD, BUG_FIX, DEPLOYMENT, TESTING, DB_MIGRATION, AI_CONFIG
+  description   String
+  status        String   @default("completed") // planned, in-progress, completed
+  branch        String?  @default("main")
+  commitHash    String?
+  createdAt     DateTime @default(now())
+}
+
