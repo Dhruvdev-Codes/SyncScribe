@@ -25,21 +25,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
 
       - name: Cache server deps
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: server/node_modules
           key: server-${{ runner.os }}-${{ hashFiles('server/package-lock.json') }}
 
       - name: Cache client deps
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: client/node_modules
           key: client-${{ runner.os }}-${{ hashFiles('client/package-lock.json') }}
@@ -73,15 +73,15 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
 
       - name: Cache client deps
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: client/node_modules
           key: client-${{ runner.os }}-${{ hashFiles('client/package-lock.json') }}
@@ -92,6 +92,9 @@ jobs:
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
+        with:
+          # Auto-enable Pages on first run (no need to visit Settings manually)
+          enablement: true
 
       - name: Build client for Pages
         working-directory: client
