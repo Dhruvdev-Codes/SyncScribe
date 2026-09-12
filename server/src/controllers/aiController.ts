@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
 import axios from 'axios';
+import OpenAI from 'openai';
 import { AIRewriteRequest, AIChatRequest, AISummarizeRequest, AITranslateRequest } from '../types';
 import { logActivity } from '../services/activityLogger';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+
+const openaiClient = OPENAI_API_KEY ? new OpenAI({ apiKey: OPENAI_API_KEY }) : null;
 
 export const SYSTEM_PROMPT = `You are SyncScribe AI Copilot, an intelligent, helpful, and friendly AI assistant integrated into a real-time collaborative document editor.
 
@@ -73,6 +76,24 @@ function handleCasualGreeting(prompt: string): string {
 async function callCloudAI(prompt: string, context?: string, systemPrompt?: string): Promise<string> {
   const sys = systemPrompt || `${SYSTEM_PROMPT}${context ? `\n\nActive Document Context:\n${context}` : ''}`;
 
+  if (openaiClient) {
+    try {
+      const response = await openaiClient.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: sys },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 2000,
+      });
+      const text = response.choices[0]?.message?.content;
+      if (isValidLLMResponse(text) && text) return text.trim();
+    } catch (err) {
+      console.warn('OpenAI SDK error:', err);
+    }
+  }
+
   if (GEMINI_API_KEY) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
@@ -85,22 +106,6 @@ async function callCloudAI(prompt: string, context?: string, systemPrompt?: stri
         { timeout: 8000 }
       );
       const text = res.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (isValidLLMResponse(text)) return text.trim();
-    } catch {}
-  }
-
-  if (OPENAI_API_KEY) {
-    try {
-      const res = await axios.post(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          model: 'gpt-4o-mini',
-          messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }],
-          temperature: 0.7,
-        },
-        { headers: { Authorization: `Bearer ${OPENAI_API_KEY}` }, timeout: 8000 }
-      );
-      const text = res.data?.choices?.[0]?.message?.content;
       if (isValidLLMResponse(text)) return text.trim();
     } catch {}
   }
