@@ -239,7 +239,32 @@ export function generateSmartLocalResponse(prompt: string, context: string = '')
   const topic = cleanTopic(prompt);
   const titleCaseTopic = topic.charAt(0).toUpperCase() + topic.slice(1);
 
-  // 1. Code / Programming Request
+  // 1. Email / Letter / Formal Message
+  if (
+    lower.includes('email') || lower.includes('letter') || lower.includes('leave') ||
+    lower.includes('resignation') || lower.includes('invitation') || lower.includes('memo') || lower.includes('message')
+  ) {
+    const isLeave = lower.includes('leave') || lower.includes('vacation') || lower.includes('time off') || lower.includes('sick');
+    const isResignation = lower.includes('resignation') || lower.includes('resign');
+
+    let subject = `Subject: ${titleCaseTopic}`;
+    let salutation = 'Dear [Recipient / Manager],';
+    let body = `I am writing to communicate regarding ${topic}.\n\nPlease find the details below and let me know if you need any additional clarification.\n\nThank you for your time and consideration.`;
+
+    if (isLeave) {
+      subject = 'Subject: Formal Leave Application / Time-Off Request';
+      salutation = 'Dear [Manager Name],';
+      body = `I am writing to formally request leave starting from [Start Date] to [End Date] due to [Reason, e.g. personal commitments / medical recovery].\n\nPrior to my leave, I will make sure all my active deliverables are up to date and hand over critical responsibilities to [Colleague Name]. I will monitor urgent emails periodically if necessary.\n\nThank you for your understanding and approval.`;
+    } else if (isResignation) {
+      subject = 'Subject: Notice of Resignation — [Your Name]';
+      salutation = 'Dear [Manager Name],';
+      body = `Please accept this email as formal notification that I am resigning from my position as [Your Job Title] at [Company Name]. My last working day will be [Last Day, e.g. Two weeks from today].\n\nI want to thank you for the support and opportunities provided during my tenure. I am committed to making this transition as smooth as possible by documenting processes and handing over ongoing projects.\n\nI wish you and the team continued success.`;
+    }
+
+    return `${subject}\n\n${salutation}\n\n${body}\n\nWarm regards,\n[Your Name]\n[Your Title / Contact Information]`;
+  }
+
+  // 2. Code / Programming Request
   if (
     lower.includes('code') || lower.includes('python') || lower.includes('javascript') ||
     lower.includes('react') || lower.includes('sql') || lower.includes('function') || lower.includes('component')
@@ -274,8 +299,20 @@ export function generateSmartLocalResponse(prompt: string, context: string = '')
     return `# ❓ Frequently Asked Questions (FAQ): ${titleCaseTopic}\n\n### Q1: What is the primary purpose of ${topic}?\n**A**: To establish a streamlined, reliable standard for ${topic}, ensuring all participants execute efficiently.\n\n### Q2: How does this integrate with our workflow?\n**A**: Seamlessly with automated synchronization and zero context switching.\n\n### Q3: What are the next steps to get started?\n**A**: Review this document, confirm your assigned action items, and join the collaborative session.`;
   }
 
-  // 6. General Comprehensive Synthesis
-  return `# ${titleCaseTopic}\n\n## 1. Introduction & Background\n**${titleCaseTopic}** represents an essential initiative designed to deliver clarity, efficiency, and high-quality results. ${context ? `Drawing from the context of your active document, this establishes the foundational framework.` : `This document outlines the core principles, execution steps, and key outcomes.`}\n\n## 2. Key Objectives & Pillars\n- **Strategic Alignment**: Establish shared benchmarks across all participants.\n- **Operational Velocity**: Accelerate throughput with structured collaborative workflows.\n- **Quality & Reliability**: Ensure all deliverables adhere to high standards.\n\n## 3. Implementation Steps\n1. **Preparation**: Collect requirements and outline measurable targets.\n2. **Execution**: Work collaboratively in real-time to build artifacts.\n3. **Review**: Perform structured reviews and publish finalized deliverables.\n\n## 4. Expected Impact\nEnhanced velocity, reduced friction, and consistently superior outcomes.`;
+  // 6. Questions & Explanations
+  if (
+    lower.startsWith('what') || lower.startsWith('how') || lower.startsWith('why') ||
+    lower.startsWith('explain') || lower.startsWith('can you') || lower.startsWith('tell me')
+  ) {
+    return `### 💡 ${titleCaseTopic}\n\nHere is an overview of **${topic}**:\n\n• **Core Concept**: ${topic} provides an effective approach to organize workflows and solve critical problems.\n• **Key Takeaways**: Establish clear guidelines, validate results, and maintain modular structure.\n• **Next Steps**: Let me know if you would like me to draft code, provide full documentation, or expand this section!`;
+  }
+
+  // 7. Direct Content Drafting
+  return `### ${titleCaseTopic}\n\n${
+    context
+      ? `Regarding **${topic}** within your current document context:`
+      : `Here is the drafted content for **${topic}**:`
+  }\n\n${titleCaseTopic} focuses on delivering clear, actionable results with streamlined collaboration.\n\n**Key Highlights:**\n- **Focus**: Align targets and clarify deliverables.\n- **Execution**: Apply consistent best practices and review progress collaboratively.\n- **Outcome**: Improved efficiency and reliable quality.\n\nLet me know if you would like me to adjust the tone, expand this section, or format it differently!`;
 }
 
 // ----------------------------------------------------------------------------

@@ -129,6 +129,13 @@ async function run() {
     throw new Error('Copilot returned overly formal executive template for casual greeting "hii"');
   }
 
+  console.log('[TEST 9c] Testing Direct Email Generation ("Write an email requesting sick leave")...');
+  const emailResult = await aiApi.chat({ message: 'Write an email requesting sick leave' });
+  console.log('         AI Chat response for email request:\n' + emailResult.response + '\n');
+  if (!emailResult.response.toLowerCase().includes('subject:') || emailResult.response.toLowerCase().includes('introduction & background')) {
+    throw new Error('Copilot failed to generate a drafted email response or returned corporate framework');
+  }
+
   console.log('\n[TEST 10] Testing Search and Filter...');
   const searchResults = await documentApi.getAll('Automated');
   console.log(`         Found ${searchResults.length} docs matching 'Automated'`);

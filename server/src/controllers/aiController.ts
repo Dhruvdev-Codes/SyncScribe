@@ -149,6 +149,31 @@ function generateSmartBackendFallback(prompt: string, context: string = ''): str
   const topic = cleanTopic(prompt);
   const titleCaseTopic = topic.charAt(0).toUpperCase() + topic.slice(1);
 
+  // 1. Email / Letter / Formal Message
+  if (
+    lower.includes('email') || lower.includes('letter') || lower.includes('leave') ||
+    lower.includes('resignation') || lower.includes('invitation') || lower.includes('memo') || lower.includes('message')
+  ) {
+    const isLeave = lower.includes('leave') || lower.includes('vacation') || lower.includes('time off') || lower.includes('sick');
+    const isResignation = lower.includes('resignation') || lower.includes('resign');
+
+    let subject = `Subject: ${titleCaseTopic}`;
+    let salutation = 'Dear [Recipient / Manager],';
+    let body = `I am writing to communicate regarding ${topic}.\n\nPlease find the details below and let me know if you need any additional clarification.\n\nThank you for your time and consideration.`;
+
+    if (isLeave) {
+      subject = 'Subject: Formal Leave Application / Time-Off Request';
+      salutation = 'Dear [Manager Name],';
+      body = `I am writing to formally request leave starting from [Start Date] to [End Date] due to [Reason, e.g. personal commitments / medical recovery].\n\nPrior to my leave, I will make sure all my active deliverables are up to date and hand over critical responsibilities to [Colleague Name]. I will monitor urgent emails periodically if necessary.\n\nThank you for your understanding and approval.`;
+    } else if (isResignation) {
+      subject = 'Subject: Notice of Resignation — [Your Name]';
+      salutation = 'Dear [Manager Name],';
+      body = `Please accept this email as formal notification that I am resigning from my position as [Your Job Title] at [Company Name]. My last working day will be [Last Day, e.g. Two weeks from today].\n\nI want to thank you for the support and opportunities provided during my tenure. I am committed to making this transition as smooth as possible by documenting processes and handing over ongoing projects.\n\nI wish you and the team continued success.`;
+    }
+
+    return `${subject}\n\n${salutation}\n\n${body}\n\nWarm regards,\n[Your Name]\n[Your Title / Contact Information]`;
+  }
+
   if (
     lower.includes('code') || lower.includes('python') || lower.includes('javascript') ||
     lower.includes('react') || lower.includes('sql') || lower.includes('function')
@@ -171,9 +196,18 @@ function generateSmartBackendFallback(prompt: string, context: string = ''): str
     }\n\n## 🔑 Key Points\n1. **Priority**: Align cross-functional workflows for *${topic}*.\n2. **Velocity**: Eliminate turnaround delays with real-time sync.\n3. **Quality**: Maintain structured documentation.\n\n## 📋 Next Steps\n- [ ] Circulate this summary with collaborators.\n- [ ] Confirm assigned deliverables.`;
   }
 
-  return `# ${titleCaseTopic}\n\n## 1. Executive Summary\n**${titleCaseTopic}** establishes a clear standard to accelerate throughput and enhance quality. ${
-    context ? `Synthesized from active document context.` : ''
-  }\n\n## 2. Core Pillars\n- **Strategic Alignment**: Shared definitions and benchmarks.\n- **High Velocity**: Seamless collaboration with automated synchronization.\n- **Quality**: Reliable deliverables.\n\n## 3. Recommended Actions\n1. **Preparation**: Collect inputs and review specs.\n2. **Execution**: Iterate collaboratively.\n3. **Publishing**: Finalize and share results.`;
+  if (
+    lower.startsWith('what') || lower.startsWith('how') || lower.startsWith('why') ||
+    lower.startsWith('explain') || lower.startsWith('can you') || lower.startsWith('tell me')
+  ) {
+    return `### 💡 ${titleCaseTopic}\n\nHere is an overview of **${topic}**:\n\n• **Core Concept**: ${topic} provides an effective way to address requirements and streamline workflows.\n• **Key Takeaways**: Establish clear guidelines, validate results, and maintain modular structure.\n• **Next Steps**: Let me know if you would like me to draft code, provide full documentation, or expand this section!`;
+  }
+
+  return `### ${titleCaseTopic}\n\n${
+    context
+      ? `Regarding **${topic}** within your current document context:`
+      : `Here is the drafted content for **${topic}**:`
+  }\n\n${titleCaseTopic} focuses on delivering clear, actionable results with streamlined collaboration.\n\n**Key Highlights:**\n- **Objective**: Establish shared benchmarks and clarify deliverables.\n- **Action**: Implement structured steps and review progress collaboratively.\n- **Outcome**: High efficiency, reduced friction, and reliable quality.\n\nLet me know if you would like me to adjust the tone, expand this section, or format it differently!`;
 }
 
 // Legacy fallback compatibility
