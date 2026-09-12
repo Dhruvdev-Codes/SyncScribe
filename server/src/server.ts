@@ -3,6 +3,8 @@ import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 import apiRoutes from './routes/api';
 import { initSocketManager } from './sockets/socketManager';
 
@@ -36,15 +38,38 @@ app.use('/api', apiRoutes);
 // Socket.IO Collaboration Manager
 initSocketManager(io);
 
-// Root route
-app.get('/', (_req, res) => {
-  res.json({
-    name: 'SyncScribe Collaboration & AI Server',
-    version: '1.0.0',
-    endpoints: '/api',
-    status: 'online',
+// Static client hosting (if client is built)
+const clientDistCandidates = [
+  path.resolve(__dirname, '../../client/dist'),
+  path.resolve(__dirname, '../client/dist'),
+  path.resolve(process.cwd(), 'client/dist'),
+  path.resolve(process.cwd(), '../client/dist'),
+];
+
+const foundClientDist = clientDistCandidates.find((p) =>
+  fs.existsSync(path.join(p, 'index.html'))
+);
+
+if (foundClientDist) {
+  console.log(`📦 Serving static client from: ${foundClientDist}`);
+  app.use(express.static(foundClientDist));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/socket.io')) {
+      return next();
+    }
+    res.sendFile(path.join(foundClientDist, 'index.html'));
   });
-});
+} else {
+  // Root route fallback if client is not packaged
+  app.get('/', (_req, res) => {
+    res.json({
+      name: 'SyncScribe Collaboration & AI Server',
+      version: '1.0.0',
+      endpoints: '/api',
+      status: 'online',
+    });
+  });
+}
 
 // Start Server
 server.listen(PORT, () => {

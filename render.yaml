@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: syncscribe
+    env: node
+    plan: free
+    buildCommand: "npm run install:all && npm run build && cd server && npx prisma db push"
+    startCommand: "npm run start"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        value: "file:./dev.db"
+      - key: JWT_SECRET
+        generateValue: true

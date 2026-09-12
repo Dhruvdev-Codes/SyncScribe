@@ -18,30 +18,15 @@ import {
 // ---------------------------------------------------------------------------
 // API mode detection
 // ---------------------------------------------------------------------------
-// SyncScribe is a full-stack app, but when deployed to STATIC hosting (GitHub
-// Pages / Netlify / etc.) there is no backend. We auto-detect that and
-// transparently switch to a localStorage-backed offline data layer so the site
-// keeps working (create/edit documents, templates, versions, comments, and a
-// built-in AI demo engine). When `VITE_API_URL` points at a live backend the
-// real API is used instead.
+// SyncScribe auto-probes the backend and gracefully falls back to a localStorage-backed
+// data layer if the backend is offline or when running in a standalone static deployment.
 // ---------------------------------------------------------------------------
 
-const staticHosts = ['localhost', '127.0.0.1', '0.0.0.0'];
-
-/** True when we are guaranteed to be on a static site (no co-hosted server). */
-function isStaticHost(): boolean {
-  const envUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || undefined;
-  if (envUrl) return false;
-  if (typeof window === 'undefined') return true;
-  const host = window.location?.hostname || '';
-  return !staticHosts.includes(host);
-}
-
 // VITE_API_URL lets us point the client at a separate backend (e.g. Render)
-// when deployed to GitHub Pages. Falls back to same-origin '/api'.
+// when deployed separately from the backend. Falls back to same-origin '/api'.
 const API_BASE =
   typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL
-    ? `${import.meta.env.VITE_API_URL}/api`
+    ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`
     : '/api';
 
 export const api = axios.create({
@@ -49,10 +34,14 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 6000,
+  timeout: 5000,
 });
 
-let localMode: boolean | null = isStaticHost() ? true : null;
+const forceLocal =
+  typeof import.meta !== 'undefined' &&
+  import.meta.env?.VITE_USE_LOCAL_STORAGE === 'true';
+
+let localMode: boolean | null = forceLocal ? true : null;
 let modePromise: Promise<boolean> | null = null;
 
 /** Synchronous check — only guaranteed after `modeReady()` resolved. */
@@ -68,14 +57,14 @@ export const modeReady = (): Promise<boolean> => {
     modePromise = (async () => {
       try {
         // Fast probe: can we talk to the backend at all?
-        await api.get('/documents', { timeout: 4000 });
+        await api.get('/documents', { timeout: 3000 });
         localMode = false;
+        console.log('[SyncScribe] Connected to live cloud backend API.');
       } catch {
         localMode = true;
         seedIfNeeded();
         console.warn(
-          '[SyncScribe] Backend not reachable — running in offline demo mode. ' +
-            'Data is stored locally in this browser. Set VITE_API_URL to enable the real server.'
+          '[SyncScribe] Backend not reachable — running in offline demo mode with local storage.'
         );
       }
       return localMode;
