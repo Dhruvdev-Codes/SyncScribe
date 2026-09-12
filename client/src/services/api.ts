@@ -30,17 +30,19 @@ const staticHosts = ['localhost', '127.0.0.1', '0.0.0.0'];
 
 /** True when we are guaranteed to be on a static site (no co-hosted server). */
 function isStaticHost(): boolean {
-  const envUrl = import.meta.env.VITE_API_URL;
+  const envUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || undefined;
   if (envUrl) return false;
-  const host = window.location.hostname || '';
+  if (typeof window === 'undefined') return true;
+  const host = window.location?.hostname || '';
   return !staticHosts.includes(host);
 }
 
 // VITE_API_URL lets us point the client at a separate backend (e.g. Render)
 // when deployed to GitHub Pages. Falls back to same-origin '/api'.
-const API_BASE = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL}/api`
-  : '/api';
+const API_BASE =
+  typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL
+    ? `${import.meta.env.VITE_API_URL}/api`
+    : '/api';
 
 export const api = axios.create({
   baseURL: API_BASE,

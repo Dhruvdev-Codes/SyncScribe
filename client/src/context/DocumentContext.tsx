@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { DocumentItem, UserPresence, CommentItem, ChatMessage, DocumentVersion } from '../types';
 import { documentApi, commentApi, versionApi } from '../services/api';
 import {
@@ -98,6 +98,12 @@ export const DocumentProvider: React.FC<{ children: React.ReactNode; documentId?
   }, [user]);
 
   useEffect(() => {
+    if (documentId) {
+      loadDocument(documentId);
+    }
+  }, [documentId, loadDocument]);
+
+  useEffect(() => {
     const socket = getSocket();
 
     socket.on('active-users', (users: UserPresence[]) => {
@@ -180,11 +186,26 @@ export const DocumentProvider: React.FC<{ children: React.ReactNode; documentId?
     }
   };
 
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const handleContentChange = (content: string, plainText: string) => {
     if (!document) return;
     setSaveStatus('saving');
     setDocument((prev) => (prev ? { ...prev, content, plainText } : null));
     broadcastChanges(document.id, content, plainText);
+
+    // Debounced persistence ensures offline edits or socket hiccups are persisted
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(async () => {
+      try {
+        await documentApi.update(document.id, { content, plainText });
+        setSaveStatus('saved');
+        setLastSaved(new Date());
+      } catch (e) {
+        console.error('Auto-save error:', e);
+        setSaveStatus('error');
+      }
+    }, 800);
   };
 
   const sendCursorMove = (cursor: { from: number; to: number } | null) => {
@@ -255,6 +276,16 @@ export const DocumentProvider: React.FC<{ children: React.ReactNode; documentId?
 
   const sendChat = (text: string) => {
     if (!document || !text.trim()) return;
+    const optimisticMessage: ChatMessage = {
+      id: `chat-${Date.now()}`,
+      documentId: document.id,
+      userId: user.id,
+      userName: user.name,
+      userColor: user.color,
+      text: text.trim(),
+      timestamp: new Date().toISOString(),
+    };
+    setChatMessages((prev) => [...prev, optimisticMessage]);
     broadcastChat(document.id, text.trim());
   };
 

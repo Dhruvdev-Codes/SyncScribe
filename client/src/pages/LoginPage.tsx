@@ -16,6 +16,21 @@ export const LoginPage: React.FC = () => {
     return <Navigate to="/" replace />;
   }
 
+  const handleDemoLogin = () => {
+    login(
+      {
+        id: 'demo-user-1',
+        name: 'Dhruv Sharma',
+        email: 'demo@syncscribe.dev',
+        role: 'user',
+        avatar: '🚀',
+        color: '#3b82f6',
+      },
+      'demo-jwt-token'
+    );
+    navigate('/');
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -25,7 +40,12 @@ export const LoginPage: React.FC = () => {
       login(data.user, data.token);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Invalid email or password');
+      // If backend is offline or unreachable, offer instant guest access
+      if (!err.response) {
+        setError('Backend is offline. You can continue as a Guest Demo collaborator.');
+      } else {
+        setError(err.response?.data?.error || 'Invalid email or password');
+      }
     } finally {
       setLoading(false);
     }
@@ -104,6 +124,14 @@ export const LoginPage: React.FC = () => {
                   <ArrowRight size={18} />
                 </>
               )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDemoLogin}
+              className="w-full py-2.5 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs transition"
+            >
+              🚀 Explore Live Demo Workspace
             </button>
           </form>
 <div className="relative">

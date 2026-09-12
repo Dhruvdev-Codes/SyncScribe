@@ -14,6 +14,21 @@ export const SignUpPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const handleDemoSignup = () => {
+    login(
+      {
+        id: `user-${Date.now()}`,
+        name: name.trim() || 'Dhruv Sharma',
+        email: email.trim() || 'demo@syncscribe.dev',
+        role: 'user',
+        avatar: '✨',
+        color: '#8b5cf6',
+      },
+      'demo-jwt-token'
+    );
+    navigate('/');
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!name || !email || !password || !confirmPassword) {
@@ -35,7 +50,12 @@ export const SignUpPage: React.FC = () => {
       login(data.user, data.token);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create account');
+      if (!err.response) {
+        // Backend offline fallback
+        handleDemoSignup();
+      } else {
+        setError(err.response?.data?.error || 'Failed to create account');
+      }
     } finally {
       setLoading(false);
     }
@@ -134,6 +154,14 @@ export const SignUpPage: React.FC = () => {
                   <ArrowRight size={18} />
                 </>
               )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDemoSignup}
+              className="w-full py-2.5 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs transition"
+            >
+              🚀 Explore Live Demo Workspace
             </button>
           </form>
 

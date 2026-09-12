@@ -6,11 +6,12 @@ let socket: Socket | null = null;
 export const getSocket = (): Socket => {
   if (!socket) {
     // VITE_API_URL lets us point at a remote backend (e.g. Render) from GitHub Pages.
-    const envUrl = import.meta.env.VITE_API_URL;
+    const envUrl =
+      typeof import.meta !== 'undefined' ? import.meta.env?.VITE_API_URL : undefined;
     let URL: string;
     if (envUrl) {
       URL = envUrl; // explicit backend URL
-    } else if (window.location.hostname === 'localhost') {
+    } else if (typeof window !== 'undefined' && window.location?.hostname === 'localhost') {
       URL = 'http://localhost:5000';
     } else {
       URL = '/'; // same-origin (works when server + client are co-hosted)
