@@ -62,7 +62,7 @@ export const CopilotDrawer: React.FC = () => {
       const aiMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         sender: 'assistant',
-        text: res.answer || 'I could not generate a response.',
+        text: res.response || res.answer || res.text || 'I could not generate a response.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 

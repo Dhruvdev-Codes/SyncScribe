@@ -25,10 +25,12 @@ globalThis.Blob = class Blob {
   }
 };
 
-globalThis.URL = {
-  createObjectURL: (blob) => `blob:mock-url-${Math.random().toString(36).slice(2)}`,
-  revokeObjectURL: () => {},
-};
+// Preserve native URL constructor
+const NativeURL = globalThis.URL;
+if (NativeURL) {
+  NativeURL.createObjectURL = (blob) => `blob:mock-url-${Math.random().toString(36).slice(2)}`;
+  NativeURL.revokeObjectURL = () => {};
+}
 
 import { documentApi, versionApi, commentApi, templateApi, aiApi, isLocalMode, modeReady } from './src/services/api.ts';
 

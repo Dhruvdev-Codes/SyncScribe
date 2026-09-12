@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { DocumentItem } from '../types';
 import { documentApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { VantaHaloBackground } from './VantaHaloBackground';
 import {
   Plus,
   Sparkles,
@@ -99,8 +100,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const allTags = ['all', 'general', 'product', 'engineering', 'ideation', 'guide'];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
-      <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-20">
+    <VantaHaloBackground
+      backgroundColor={0x020617}
+      baseColor={0x4f46e5}
+      size={1.2}
+      className="min-h-screen"
+    >
+      <div className="min-h-screen bg-slate-50/30 dark:bg-slate-950/70 backdrop-blur-[2px] text-slate-900 dark:text-slate-100 transition-colors flex flex-col">
+        <header className="h-16 border-b border-slate-200/40 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-purple-600 flex items-center justify-center text-white font-bold shadow-md shadow-brand-500/20">
             <Sparkles className="w-5 h-5" />
@@ -130,7 +137,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand-600 via-indigo-600 to-purple-600 text-white p-8 shadow-xl mb-10">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-brand-600/90 via-indigo-600/85 to-purple-600/90 backdrop-blur-md text-white p-8 shadow-2xl shadow-brand-500/25 border border-white/15 mb-10">
           <div className="relative z-10 max-w-2xl">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold mb-4">
               <Sparkles className="w-3.5 h-3.5" /> Next-Gen Collaborative Workspace
@@ -245,7 +252,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div
                   key={doc.id}
                   onClick={() => onSelectDocument(doc.id)}
-                  className="group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-brand-500/50 dark:hover:border-brand-500/50 rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between"
+                  className="group relative bg-white/75 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60 hover:border-brand-500/60 dark:hover:border-brand-500/60 rounded-2xl p-5 shadow-md hover:shadow-2xl hover:shadow-brand-500/10 transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-start justify-between mb-3">
@@ -311,12 +318,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
         ) : null}
 
         {viewMode === 'list' && documents.length > 0 && (
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="bg-white/75 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60 rounded-2xl overflow-hidden divide-y divide-slate-100/60 dark:divide-slate-800/60 shadow-lg">
             {documents.map((doc) => (
               <div
                 key={doc.id}
                 onClick={() => onSelectDocument(doc.id)}
-                className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
+                className="p-4 flex items-center justify-between hover:bg-white/90 dark:hover:bg-slate-800/70 cursor-pointer transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-2xl select-none">{doc.icon || '📝'}</span>
@@ -342,6 +349,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         )}
       </main>
-    </div>
+      </div>
+    </VantaHaloBackground>
   );
 };

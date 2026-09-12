@@ -75,7 +75,7 @@ export const InlineCommandBar: React.FC = () => {
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleGenerate();
-              if (e.key === 'Escape') setActiveModal('none');
+              if (e.key === 'Escape') setActiveModal(null);
             }}
             className="flex-1 bg-transparent border-none text-sm focus:outline-none text-slate-900 dark:text-slate-100 placeholder-slate-400"
           />
@@ -89,7 +89,7 @@ export const InlineCommandBar: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setActiveModal('none')}
+            onClick={() => setActiveModal(null)}
             className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
           >
             <X className="w-4 h-4" />

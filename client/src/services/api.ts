@@ -5,7 +5,7 @@ import {
   CommentItem,
   CommentReply,
   DocumentTemplate,
-} from '../types';
+} from '../types/index';
 import {
   localDocumentApi,
   localVersionApi,
