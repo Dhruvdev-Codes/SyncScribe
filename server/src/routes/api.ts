@@ -29,6 +29,7 @@ import {
   translateText,
 } from '../controllers/aiController';
 import devRoutes from './devRoutes';
+import authRoutes from './authRoutes';
 
 
 const router = Router();
@@ -69,6 +70,9 @@ router.post('/ai/rewrite', rewriteText);
 router.post('/ai/chat', chatWithDocument);
 router.post('/ai/summarize', summarizeDocument);
 router.post('/ai/translate', translateText);
+
+// Auth Routes
+router.use('/auth', authRoutes);
 
 // Developer Telemetry & Database Activity Routes
 router.use('/dev', devRoutes);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DocumentProvider, useDocument } from './context/DocumentContext';
 import { Header } from './components/Header';
@@ -12,6 +13,10 @@ import { OutlineDrawer } from './components/Drawers/OutlineDrawer';
 import { ShareModal } from './components/Modals/ShareModal';
 import { TemplatesModal } from './components/Modals/TemplatesModal';
 import { SettingsModal } from './components/Modals/SettingsModal';
+import { LoginPage } from './pages/LoginPage';
+import { SignUpPage } from './pages/SignUpPage';
+import { DeveloperLoginPage } from './pages/DeveloperLoginPage';
+import { DeveloperDashboardPage } from './pages/DeveloperDashboardPage';
 
 interface DocumentWorkspaceInnerProps {
   onBack: () => void;
@@ -136,10 +141,24 @@ const MainWorkspace: React.FC = () => {
   );
 };
 
+const WorkspaceRouter: React.FC = () => {
+  const location = useLocation();
+
+  // Allow deep-linking via query params on the workspace route
+  return <MainWorkspace key={location.search || undefined} />;
+};
+
 export const App: React.FC = () => {
   return (
     <AuthProvider>
-      <MainWorkspace />
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/dev/login" element={<DeveloperLoginPage />} />
+        <Route path="/dev/dashboard" element={<DeveloperDashboardPage />} />
+        <Route path="/" element={<WorkspaceRouter />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </AuthProvider>
   );
 };

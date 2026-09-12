@@ -10,11 +10,14 @@ datasource db {
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
+  password  String   // Hashed password
   name      String
   avatar    String?
   color     String   @default("#3b82f6")
+  role      String   @default("user") // "user" | "developer" | "admin"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  documents Document[]
 }
 
 model Document {
@@ -27,6 +30,7 @@ model Document {
   icon        String?           @default("📝")
   isPublic    Boolean           @default(false)
   ownerId     String?
+  owner       User?             @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   tags        String            @default("[]") // JSON string of string[]
   version     Int               @default(1)
   createdAt   DateTime          @default(now())

@@ -44,6 +44,13 @@
 - **Document Outline & Live Stats**: Real-time word count, character count, estimated reading time, and heading navigation.
 - **Export & Import**: Export to **Markdown**, **HTML**, **Plain Text**, and **PDF Print**, or import existing Markdown files.
 
+### 6. 🔐 Authentication & Role-Based Access
+- **User Accounts**: Sign up and log in with email + password (bcrypt-hashed) and JWT session tokens.
+- **Dedicated Pages**: `./login`, `./signup`, and a developer-only portal at `./dev/login`.
+- **Developer Portal**: Role-locked developer login (`developer`/`admin`) grants access to the diagnostic console at `./dev/dashboard` with system telemetry, database stats, and dev activity feeds.
+- **Seeded Default Developer**: Run `npm run seed --prefix server` to create `dhruv@syncscribe.dev` (override with `DEV_SEED_EMAIL` / `DEV_SEED_PASSWORD` env vars).
+- **Auth API**: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/login/developer`, `GET /api/auth/me`. All activity (login/registration) is recorded in the telemetry audit log.
+
 
 ---
 

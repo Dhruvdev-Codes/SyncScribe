@@ -1,12 +1,21 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
 
+interface AuthUser extends User {
+  email?: string;
+  role?: string;
+}
+
 interface AuthContextType {
-  user: User;
+  user: AuthUser;
+  isAuthenticated: boolean;
+  token: string | null;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
   updateUserProfile: (name: string, avatar?: string, color?: string) => void;
   updateUser: (data: Partial<User>) => void;
+  login: (user: AuthUser, token: string) => void;
+  logout: () => void;
 }
 
 const PRESET_COLORS = [
@@ -33,27 +42,31 @@ const PRESET_NAMES = [
 
 const getRandomItem = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
+const createGuestUser = (): AuthUser => ({
+  id: `guest-${Math.random().toString(36).substring(2, 9)}`,
+  name: getRandomItem(PRESET_NAMES),
+  color: getRandomItem(PRESET_COLORS),
+  role: 'guest',
+});
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User>(() => {
+  const [user, setUser] = useState<AuthUser>(() => {
     const saved = localStorage.getItem('syncscribe_user');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.name) return parsed as AuthUser;
       } catch (e) {
         console.error(e);
       }
     }
-    const randomName = getRandomItem(PRESET_NAMES);
-    const randomColor = getRandomItem(PRESET_COLORS);
-    const newUser: User = {
-      id: `user-${Math.random().toString(36).substring(2, 9)}`,
-      name: randomName,
-      color: randomColor,
-    };
-    localStorage.setItem('syncscribe_user', JSON.stringify(newUser));
-    return newUser;
+    return createGuestUser();
+  });
+
+  const [token, setToken] = useState<string | null>(() => {
+    return localStorage.getItem('syncscribe_token');
   });
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -67,6 +80,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   useEffect(() => {
+    if (token) {
+      localStorage.setItem('syncscribe_token', token);
+    } else {
+      localStorage.removeItem('syncscribe_token');
+    }
+  }, [token]);
+
+  useEffect(() => {
     localStorage.setItem('syncscribe_theme', theme);
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
@@ -74,6 +95,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       document.documentElement.classList.remove('dark');
     }
   }, [theme]);
+
+  const login = (newUser: AuthUser, newToken: string) => {
+    // If auth response has no name but email exists, derive a display name
+    const normalized: AuthUser = {
+      ...newUser,
+      name: newUser.name || newUser.email?.split('@')[0] || 'User',
+      color: newUser.color || getRandomItem(PRESET_COLORS),
+      role: newUser.role || 'user',
+    };
+    setUser(normalized);
+    setToken(newToken);
+  };
+
+  const logout = () => {
+    setUser(createGuestUser());
+    setToken(null);
+  };
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
@@ -95,8 +133,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
   };
 
+  // Authenticated = has a server-issued token and a real (non-guest) user
+  const isAuthenticated = !!token && !!user && user.role !== 'guest';
+
   return (
-    <AuthContext.Provider value={{ user, theme, toggleTheme, updateUserProfile, updateUser }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, token, theme, toggleTheme, updateUserProfile, updateUser, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,10 +1,31 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 import { defaultTemplates } from '../src/controllers/templateController';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Seeding database...');
+
+  // 0. Seed default developer/admin account (idempotent upsert)
+  const devEmail = process.env.DEV_SEED_EMAIL || 'dhruv@syncscribe.dev';
+  const devPassword = process.env.DEV_SEED_PASSWORD || 'SyncScribeDev2024!';
+  const existingDev = await prisma.user.findUnique({ where: { email: devEmail } });
+  if (!existingDev) {
+    const hashedPassword = await bcrypt.hash(devPassword, 12);
+    await prisma.user.create({
+      data: {
+        email: devEmail,
+        password: hashedPassword,
+        name: 'Dhruv (Developer)',
+        color: '#06b6d4',
+        role: 'developer',
+      },
+    });
+    console.log(`✅ Default developer account seeded: ${devEmail}`);
+  } else {
+    console.log(`⏭️  Developer account already exists: ${devEmail}`);
+  }
 
   // 1. Seed Templates
   for (const template of defaultTemplates) {
