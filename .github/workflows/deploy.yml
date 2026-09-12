@@ -1,0 +1,112 @@
+name: CI + Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------
+  # CI: verify the whole monorepo still builds on every push/PR
+  # ---------------------------------------------------------------
+  build:
+    name: Build (server + client)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Cache server deps
+        uses: actions/cache@v4
+        with:
+          path: server/node_modules
+          key: server-${{ runner.os }}-${{ hashFiles('server/package-lock.json') }}
+
+      - name: Cache client deps
+        uses: actions/cache@v4
+        with:
+          path: client/node_modules
+          key: client-${{ runner.os }}-${{ hashFiles('client/package-lock.json') }}
+
+      - name: Install server deps
+        working-directory: server
+        run: npm ci
+
+      - name: Install client deps
+        working-directory: client
+        run: npm ci
+
+      - name: Build server
+        working-directory: server
+        run: npm run build
+
+      - name: Build client (base /)
+        working-directory: client
+        run: npm run build
+
+  # ---------------------------------------------------------------
+  # CD: build the frontend for GitHub Pages and publish it
+  # ---------------------------------------------------------------
+  deploy:
+    name: Deploy frontend to GitHub Pages
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Cache client deps
+        uses: actions/cache@v4
+        with:
+          path: client/node_modules
+          key: client-${{ runner.os }}-${{ hashFiles('client/package-lock.json') }}
+
+      - name: Install client deps
+        working-directory: client
+        run: npm ci
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build client for Pages
+        working-directory: client
+        env:
+          # Served from https://<user>.github.io/<repo>/ so base = /<repo>/
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          # Optional: point at a hosted backend, e.g. https://syncscribe-api.onrender.com
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+        run: npm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: client/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

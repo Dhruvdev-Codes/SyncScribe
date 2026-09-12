@@ -5,7 +5,16 @@ let socket: Socket | null = null;
 
 export const getSocket = (): Socket => {
   if (!socket) {
-    const URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : '/';
+    // VITE_API_URL lets us point at a remote backend (e.g. Render) from GitHub Pages.
+    const envUrl = import.meta.env.VITE_API_URL;
+    let URL: string;
+    if (envUrl) {
+      URL = envUrl; // explicit backend URL
+    } else if (window.location.hostname === 'localhost') {
+      URL = 'http://localhost:5000';
+    } else {
+      URL = '/'; // same-origin (works when server + client are co-hosted)
+    }
     socket = io(URL, {
       autoConnect: true,
       reconnectionAttempts: 10,
